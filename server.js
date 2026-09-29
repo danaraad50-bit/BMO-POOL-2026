@@ -55,7 +55,7 @@ function num(v){const n=Number(v);return Number.isFinite(n)?n:0;}
 function positionLabel(pos){return pos==="F"?"Forward":pos==="D"?"Defence":pos==="G"?"Goalie":"Team";}
 function iso(d){return new Date(d).toISOString();}
 
-async function fetchJSON(url){const r=await fetch(url,{headers:{"User-Agent":"BMO2026-NHL-Pool-Tracker/2.0"}});if(!r.ok)throw new Error(`NHL API ${r.status} for ${url}`);return r.json();}
+async function fetchJSON(url){const r=await fetch(url,{headers:{"User-Agent":"BMO2026-NHL-Pool-Tracker/2.0"}});if(!r.ok)throw new 
 function cayenne(seasonId,gameTypeId){return encodeURIComponent(`seasonId=${seasonId} and gameTypeId=${gameTypeId}`);}
 async function fetchSummary(kind){const url=`${API_BASE}/${kind}/summary?isAggregate=false&isGame=false&start=0&limit=-1&cayenneExp=${cayenne(config.seasonId,config.gameTypeId)}`;const data=await fetchJSON(url);return data.data||[];}
 async function fetchAllStats(){const [skaters,goalies,teams]=await Promise.all([fetchSummary("skater"),fetchSummary("goalie"),fetchSummary("team")]);return {skaters,goalies,teams};}
