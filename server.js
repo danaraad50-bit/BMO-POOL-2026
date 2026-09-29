@@ -15,7 +15,7 @@ const rosters = JSON.parse(fs.readFileSync(path.join(__dirname, "data/rosters.js
 const participants = JSON.parse(fs.readFileSync(path.join(__dirname, "data/participants.json")));
 const slotOptions = JSON.parse(fs.readFileSync(path.join(__dirname, "data/slot-options.json")));
 const PORT = process.env.PORT || 3000;
-const API_BASE = process.env.NHL_API_BASE || "https://api-web.nhle.com/v1/";
+const API_BASE = process.env.NHL_API_BASE || "https://api.nhle.com/stats/rest/en";
 const ADMIN_PASSPHRASE = process.env.ADMIN_PASSPHRASE || "bmo2026admin";
 
 const TEAM_ALIASES = { NJ:"NJD", NJD:"NJD", SJ:"SJS", SJS:"SJS", TB:"TBL", TBL:"TBL", VGK:"VGK", MTL:"MTL", TOR:"TOR", EDM:"EDM", COL:"COL", DAL:"DAL", MIN:"MIN", CAR:"CAR", CHI:"CHI", DET:"DET", ANA:"ANA", NYI:"NYI", NYR:"NYR", BOS:"BOS", BUF:"BUF", FLA:"FLA", LAK:"LAK", NSH:"NSH", OTT:"OTT", PIT:"PIT", STL:"STL", WSH:"WSH", UTA:"UTA", VAN:"VAN", SEA:"SEA", CBJ:"CBJ", WPG:"WPG", CGY:"CGY", PHI:"PHI" };
