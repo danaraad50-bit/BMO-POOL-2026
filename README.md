@@ -29,7 +29,7 @@ Teams: W = 2, OTL = 1
 npm install
 npm start
 ```
-Then open http://localhost:3000.
+Then open [http://localhost:3000](https://bmo-pool-2026.onrender.com).
 
 ## Environment variables
 - `PORT` — default `3000`
