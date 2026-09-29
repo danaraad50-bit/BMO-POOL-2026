@@ -55,7 +55,7 @@ function num(v){const n=Number(v);return Number.isFinite(n)?n:0;}
 function positionLabel(pos){return pos==="F"?"Forward":pos==="D"?"Defence":pos==="G"?"Goalie":"Team";}
 function iso(d){return new Date(d).toISOString();}
 
-async function fetchJSON(url){const r=await fetch(url,{headers:{"User-Agent":"BMO2026-NHL-Pool-Tracker/2.0"}});if(!r.ok)throw new 
+async function fetchJSON(url){const r=await fetch(url,{headers:{"User-Agent":"BMO2026-NHL-Pool-Tracker/2.0"}});if(!r.ok)throw new Error(`NHL API ${r.status} for ${url}`);return r.json();}
 function cayenne(seasonId,gameTypeId){return encodeURIComponent(`seasonId=${seasonId} and gameTypeId=${gameTypeId}`);}
 async function fetchSummary(kind){const url=`${API_BASE}/${kind}/summary?isAggregate=false&isGame=false&start=0&limit=-1&cayenneExp=${cayenne(config.seasonId,config.gameTypeId)}`;const data=await fetchJSON(url);return data.data||[];}
 async function fetchAllStats(){const [skaters,goalies,teams]=await Promise.all([fetchSummary("skater"),fetchSummary("goalie"),fetchSummary("team")]);return {skaters,goalies,teams};}
@@ -149,6 +149,6 @@ app.post("/api/admin/paid",adminGate,(req,res)=>{const {poolName,paid}=req.body|
 app.post("/api/admin/undo-trade",adminGate,async(req,res)=>{const id=Number(req.body?.tradeId);const t=db.prepare("SELECT * FROM trades WHERE id=? AND undone_at IS NULL").get(id);if(!t)return res.status(404).json({error:"Active trade not found"});db.prepare("UPDATE trades SET undone_at=? WHERE id=?").run(iso(new Date()),id);try{await refresh("undo-trade");}catch(e){console.error(e);}res.json({ok:true,state:latest()});});
 app.get("/api/admin/status",adminGate,(req,res)=>res.json({updatedAt:latest().updatedAt,ageMinutes:ageMinutes(),unmatched:latest().statsQuality?.unmatched||[],trades:tradeRows(false),participants:participants.map(p=>({...p,paid:!!db.prepare("SELECT paid FROM participants_meta WHERE pool_name=?").get(p.poolName)?.paid}))}));
 
-app.get("/*splat",(req,res)=>res.sendFile(path.join(__dirname,"public/index.html")));
+app.get("*",(req,res)=>res.sendFile(path.join(__dirname,"public/index.html")));
 cron.schedule(config.updateSchedule,async()=>{try{await refresh("scheduled");console.log("Scheduled NHL refresh complete");}catch(e){console.error("Scheduled NHL refresh failed:",e.message);}}, {timezone:config.timezone});
 app.listen(PORT,async()=>{console.log(`BMO2026 tracker listening on ${PORT}`);if(!db.prepare("SELECT id FROM snapshots LIMIT 1").get()){try{await refresh("startup");console.log("Initial NHL snapshot saved");}catch(e){console.error("Initial NHL snapshot unavailable:",e.message);}}});
