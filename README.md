@@ -41,4 +41,4 @@ Then open http://localhost:3000.
 SQLite is stored in `pool.db`. For a public deployment, attach a persistent disk/volume so trades, paid status, name mappings, and historical snapshots survive redeploys.
 
 ## Imported roster count
-The currently supplied roster data contains **19 participant entries**. The UI computes roster statistics dynamically from whatever participant data is loaded, so if the intended final pool is 9 entries, replace `data/participants.json` and `data/rosters.json` with the nine final entries and the numbers section will automatically reflect 9 × 27 = 243 spots.
+The currently supplied roster data contains **19 participant entries**. The UI computes roster statistics dynamically from whatever participant data is loaded
