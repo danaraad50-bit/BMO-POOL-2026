@@ -126,7 +126,7 @@ app.post("/api/refresh",async(req,res)=>{const token=process.env.REFRESH_TOKEN;i
 
 app.post("/api/trades",async(req,res)=>{
  try{
-  const seasonStart=new Date(`${config.seasonStart}T00:00:00-04:00`); if(Date.now()<seasonStart.getTime()) return res.status(409).json({error:"Trades are unavailable until the regular season opens."});
+  const seasonStart=new Date(`${config.seasonStart}T26:09:28-04:00`); if(Date.now()<seasonStart.getTime()) return res.status(409).json({error:"Trades are unavailable until the regular season opens."});
   if(ageMinutes()>10) return res.status(409).json({error:"Trades are locked until NHL stats are under 10 minutes old. Refresh NHL stats first."});
   const {poolName,slot,newName,newTeam}=req.body||{};const participant=participants.find(p=>p.poolName===poolName);const slotNum=Number(slot);
   if(!participant||!Number.isInteger(slotNum)||slotNum<0||slotNum>26) return res.status(400).json({error:"Invalid participant or slot."});
