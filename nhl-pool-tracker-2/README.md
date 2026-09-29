@@ -1,44 +1,79 @@
 # BMO2026 NHL Pool Tracker — 2026–27
 
-Updated build with one-trade-per-entry transactions, admin controls, live roster analytics, NHL sync health, and original inline-SVG hockey artwork.
+A shareable, server-backed NHL pool tracker with:
+- 19 participant rosters loaded from the supplied workbook.
+- Server-side NHL stats API polling (regular season only).
+- Configurable scoring in `data/config.json`.
+- Daily 06:00 America/Toronto automatic snapshots, plus manual refresh.
+- SQLite history for season-long trend charts.
+- Standings, participant detail, and player ownership/stat views.
+- Mobile-first hockey-themed UI.
 
-## Included
-- 27 locked draft slots per entry.
-- One trade per entry, any time during the regular season.
-- Trade replacement must come from the exact same original pool-sheet slot.
-- Old pick keeps points earned through the trade; new pick starts at zero and earns only afterward.
-- Trade is refused when the last NHL snapshot is more than 10 minutes old.
-- Admin passphrase defaults to `bmo2026admin` and can be overridden with `ADMIN_PASSPHRASE`.
-- Admin can toggle paid/unpaid, undo active trades, and fix unmatched NHL player spellings.
-- Regular-season-only NHL Stats API queries: season `20262027`, game type `2`.
-- No NHL request is made before `seasonStart`; no preseason/playoff data is counted.
-- Daily 06:00 America/Toronto scheduled snapshot plus manual refresh.
-- Last good snapshot remains visible if NHL.com/API is unavailable.
-- Historical snapshots power the cumulative trend chart.
-- Pool-by-the-numbers reads the same live roster data as standings.
-- Original inline SVG hockey emblem; no team logos or copyrighted artwork.
+## Scoring loaded from the supplied pool sheet
 
-## Scoring loaded from the supplied BMO2026 sheet
-Forwards: G = 2, A = 1
-Defencemen: G = 2, A = 1
-Goalies: W = 2, SO = 2, OTL = 1
+Forwards: G = 2, A = 1  
+Defencemen: G = 2, A = 1  
+Goalies: W = 2, SO = 2, OTL = 1  
 Teams: W = 2, OTL = 1
 
-## Run
+The workbook also contains preseason/current-entry status fields. The tracker does **not** use those preseason totals for the regular-season scoring; it recalculates from the 2026–27 regular-season NHL stats API.
+
+## Run locally
+
 ```bash
 npm install
 npm start
 ```
-Then open http://localhost:3000.
 
-## Environment variables
-- `PORT` — default `3000`
-- `ADMIN_PASSPHRASE` — default `bmo2026admin`
-- `REFRESH_TOKEN` — optional secret for POST `/api/refresh`
-- `NHL_API_BASE` — optional, defaults to `https://api.nhle.com/stats/rest/en`
+Open http://localhost:3000
 
-## Persistent storage
-SQLite is stored in `pool.db`. For a public deployment, attach a persistent disk/volume so trades, paid status, name mappings, and historical snapshots survive redeploys.
+Set `PORT` if needed. SQLite is stored as `pool.db`.
 
-## Imported roster count
-The currently supplied roster data contains **19 participant entries**. The UI computes roster statistics dynamically from whatever participant data is loaded, so if the intended final pool is 9 entries, replace `data/participants.json` and `data/rosters.json` with the nine final entries and the numbers section will automatically reflect 9 × 27 = 243 spots.
+## Deployment
+
+The included Dockerfile works on Render, Railway, Fly.io, etc. Use a persistent disk/volume for `pool.db`; otherwise historical snapshots will be lost on redeploy.
+
+Environment variables:
+- `PORT` — default 3000
+- `REFRESH_TOKEN` — optional secret for POST /api/refresh
+- `NHL_API_BASE` — optional override, default `https://api.nhle.com/stats/rest/en`
+
+If `REFRESH_TOKEN` is set, the refresh button sends it in `X-Refresh-Token`. For a public deployment, set this secret.
+
+## NHL API
+
+The server uses NHL stats REST endpoints:
+- `/skater/summary`
+- `/goalie/summary`
+- `/team/summary`
+
+with `seasonId=20262027` and `gameTypeId=2` (regular season). The adapter is intentionally tolerant of NHL field-name variations.
+
+## Important roster data note
+
+The supplied roster workbook uses some abbreviated/changed franchise codes and player names. The server includes an alias layer in `server.js` so common cases such as `NJ` → `NJD`, `SJ` → `SJS`, `TB` → `TBL`, `VGK` → `VGK`, etc. can be normalized. Player matching is name + franchise based. If the NHL API changes a player/team identifier, add an alias to `PLAYER_ALIASES` or `TEAM_ALIASES`.
+
+## Changing scoring
+
+Edit `data/config.json`, then restart the server. The scoring engine only awards configured categories. You can add `PIM`, `PPG`, `PPA`, etc. by adding them to the relevant position's scoring map, e.g.:
+
+```json
+"F": { "G": 2, "A": 1, "PPG": 0.5 }
+```
+
+Goalie and team categories work the same way.
+
+## Trades / adds / drops
+
+The supplied workbook is a draft snapshot. This version treats those rosters as locked for the regular season. If the pool later allows transactions, add dated roster events to `data/transactions.json` and apply them in the scoring layer before snapshots are saved.
+
+## Tie-breakers
+
+Configured order: total points, goals, assists, alphabetical. The UI displays tied ranks correctly. Change `tieBreakers` in `data/config.json` if the pool rules change.
+
+## Update behavior
+
+- Browser auto-refreshes displayed standings every 15 minutes.
+- Server polls the NHL API every day at 06:00 America/Toronto and stores a snapshot.
+- "Refresh now" can be used after a game night. It also stores a snapshot.
+- The history chart uses server-stored snapshots, so all participants see the same history.
